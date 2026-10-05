@@ -1,60 +1,16 @@
 <?php
-
-use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes - E-Procurement System (Final Front-End)
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/', function () {
-    return view('welcome');
+use Illuminate\Support\Facades\Route; use App\Http\Controllers\{AuthController,ProcurementController};
+Route::middleware('guest')->group(function(){Route::get('/login',[AuthController::class,'showLogin'])->name('login');Route::post('/login',[AuthController::class,'login'])->name('login.attempt');});
+Route::post('/logout',[AuthController::class,'logout'])->middleware('auth')->name('logout');
+Route::middleware('auth')->group(function(){
+ Route::get('/',[ProcurementController::class,'dashboard'])->name('dashboard'); Route::get('/dashboard',[ProcurementController::class,'dashboard']);
+ Route::middleware('role:user_internal')->prefix('pr')->name('pr.')->group(function(){Route::get('/create',[ProcurementController::class,'createPr'])->name('create');Route::post('/create',[ProcurementController::class,'storePr'])->name('store');Route::get('/my-requests',fn()=>redirect()->route('dashboard'))->name('my-requests');});
+ Route::middleware('role:supervisor')->get('/pr/approval-l1',[ProcurementController::class,'approvals'])->defaults('level',1)->name('pr.approval11'); Route::middleware('role:management')->get('/pr/approval-l2',[ProcurementController::class,'approvals'])->defaults('level',2)->name('pr.approval12'); Route::middleware('role:supervisor,management')->post('/pr/{pr}/decision',[ProcurementController::class,'decidePr'])->name('pr.decision');
+ Route::middleware('role:procurement')->prefix('rfq')->name('rfq.')->group(function(){Route::get('/create',[ProcurementController::class,'createRfq'])->name('create');Route::post('/create',[ProcurementController::class,'storeRfq'])->name('store');Route::get('/publish',fn()=>redirect()->route('rfq.create'))->name('publish');});
+ Route::middleware('role:procurement')->get('/evaluasi-penawaran',[ProcurementController::class,'evaluation'])->name('evaluasi.index'); Route::middleware('role:procurement')->post('/quotation/{quotation}/winner',[ProcurementController::class,'chooseWinner'])->name('quotation.winner');
+ Route::middleware('role:vendor')->prefix('vendor')->name('vendor.')->group(function(){Route::get('/quotation',[ProcurementController::class,'quotations'])->name('quotation.upload');Route::post('/quotation',[ProcurementController::class,'storeQuotation'])->name('quotation.store');Route::get('/invoice',[ProcurementController::class,'createInvoice'])->name('invoice.send');Route::post('/invoice',[ProcurementController::class,'storeInvoice'])->name('invoice.store');});
+ Route::middleware('role:procurement')->prefix('po')->name('po.')->group(function(){Route::get('/create',[ProcurementController::class,'createPo'])->name('create');Route::post('/create',[ProcurementController::class,'storePo'])->name('store');}); Route::middleware('role:pejabat_keuangan')->get('/po/approve',[ProcurementController::class,'poApprovals'])->name('po.approve'); Route::middleware('role:pejabat_keuangan')->post('/po/{po}/decision',[ProcurementController::class,'decidePo'])->name('po.decision');
+ Route::middleware('role:petugas_gudang')->prefix('gr')->name('gr.')->group(function(){Route::get('/create',[ProcurementController::class,'createGr'])->name('create');Route::post('/create',[ProcurementController::class,'storeGr'])->name('store');});
+ Route::middleware('role:unit_keuangan')->prefix('invoice')->name('invoice.')->group(function(){Route::get('/verify',[ProcurementController::class,'verifyInvoices'])->name('verify');Route::post('/{invoice}/verify',[ProcurementController::class,'verifyInvoice'])->name('verify.store');});
+ Route::middleware('role:admin')->group(function(){Route::get('/items',[ProcurementController::class,'items'])->name('items.index');Route::get('/departments',[ProcurementController::class,'departments'])->name('departments.index');Route::get('/users',[ProcurementController::class,'users'])->name('users.index');});
 });
-
-Route::get('/dashboard', function () {
-    return view('welcome');
-})->name('dashboard');
-
-// 1. REQUISITION (PR)
-Route::prefix('pr')->name('pr.')->group(function () {
-    Route::get('/create', fn() => view('pr.create'))->name('create');
-    Route::get('/my-requests', fn() => view('welcome'))->name('my-requests');
-    Route::get('/approval-l1', fn() => view('pr.approval'))->name('approval11');
-    Route::get('/approval-l2', fn() => view('pr.approval'))->name('approval12');
-});
-
-// 2. RFQ & EVALUASI
-Route::prefix('rfq')->name('rfq.')->group(function () {
-    Route::get('/create', fn() => view('rfq.create'))->name('create');
-    Route::get('/publish', fn() => view('rfq.create'))->name('publish');
-});
-
-Route::get('/evaluasi-penawaran', fn() => view('procurement.evaluasi'))->name('evaluasi.index');
-
-// 3. PURCHASE ORDER (PO)
-Route::prefix('po')->name('po.')->group(function () {
-    Route::get('/create', fn() => view('po.create'))->name('create');
-    Route::get('/approve', fn() => view('po.approve'))->name('approve');
-});
-
-// 4. VENDOR AREA
-Route::prefix('vendor')->name('vendor.')->group(function () {
-    Route::get('/quotation', fn() => view('vendor.quotation'))->name('quotation.upload');
-    Route::get('/invoice', fn() => view('vendor.invoice'))->name('invoice.send');
-});
-
-// 5. GOODS RECEIVE (GR)
-Route::prefix('gr')->name('gr.')->group(function () {
-    Route::get('/create', fn() => view('gr.create'))->name('create');
-});
-
-// 6. KEUANGAN & MATCHING
-Route::prefix('invoice')->name('invoice.')->group(function () {
-    Route::get('/verify', fn() => view('invoice.verify'))->name('verify');
-});
-
-// 7. MASTER DATA
-Route::get('/items', fn() => view('welcome'))->name('items.index');
-Route::get('/departments', fn() => view('welcome'))->name('departments.index');
-Route::get('/users', fn() => view('welcome'))->name('users.index');

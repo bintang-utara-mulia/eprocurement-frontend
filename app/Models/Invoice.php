@@ -1,0 +1,2 @@
+<?php
+namespace App\Models; use Illuminate\Database\Eloquent\Model; class Invoice extends Model { protected $fillable=['po_id','vendor_id','number','amount','document_path','status','verification_note']; protected $casts=['amount'=>'decimal:2']; public function po(){return $this->belongsTo(PurchaseOrder::class,'po_id');} public function vendor(){return $this->belongsTo(User::class,'vendor_id');} }
