@@ -1,58 +1,47 @@
 @extends('layouts.app')
 
-@section('title', 'Buat & Publikasi RFQ')
+@section('title', 'Publikasi RFQ')
 
 @section('content')
 <section class="section">
     <div class="section-header">
-        <h1>Buat & Publikasi Request For Quotation (RFQ)</h1>
+        <h1>Buat & Publikasi RFQ</h1>
     </div>
 
     <div class="section-body">
         <div class="card">
             <div class="card-header">
-                <h4>Form Permintaan Penawaran (RFQ)</h4>
+                <h4>Pilih PR yang Sudah Disetujui</h4>
             </div>
             <div class="card-body">
-                <form action="#" method="POST">
+                <form action="{{ route('rfq.store') }}" method="POST">
                     @csrf
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label>Pilih PR Terverifikasi</label>
-                            <select class="form-control" required>
-                                <option value="">-- Pilih PR Ter-approve --</option>
-                                <option value="1">PR-2026-001 - Pengadaan Printer Kantor (Rp 12.500.000)</option>
-                                <option value="2">PR-2026-002 - Pengadaan Server RACK 2U (Rp 85.000.000)</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>Nomor RFQ</label>
-                            <input type="text" class="form-control" value="RFQ-2026-0001" readonly>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="form-group col-md-6">
-                            <label>Batas Akhir Penawaran (Deadline)</label>
-                            <input type="date" class="form-control" required>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label>Metode Pengadaan</label>
-                            <select class="form-control" required>
-                                <option value="open">Lelang Terbuka (Public)</option>
-                                <option value="limited">Lelang Terbatas (Invited Vendors)</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label>Pilih PR</label>
+                        <select name="pr_id" class="form-control" required>
+                            @forelse($prs as $pr)
+                                <option value="{{ $pr->id }}">{{ $pr->number }} - {{ $pr->description }}</option>
+                            @empty
+                                <option value="">Belum ada PR yang diapprove</option>
+                            @endforelse
+                        </select>
                     </div>
 
                     <div class="form-group">
-                        <label>Ketentuan & Spesifikasi Teknis Khusus</label>
-                        <textarea class="form-control" rows="4" placeholder="Tuliskan spesifikasi teknis barang, garansi, dan syarat pengiriman..."></textarea>
+                        <label>Batas Waktu (Deadline)</label>
+                        <input type="date" name="deadline" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Metode Penawaran</label>
+                        <select name="method" class="form-control" required>
+                            <option value="open">Terbuka (Open Tender)</option>
+                            <option value="limited">Terbatas (Limited)</option>
+                        </select>
                     </div>
 
                     <div class="text-right">
-                        <button type="reset" class="btn btn-secondary">Reset</button>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Publikasikan RFQ</button>
+                        <button type="submit" class="btn btn-primary">Publikasikan RFQ</button>
                     </div>
                 </form>
             </div>
