@@ -15,7 +15,12 @@
             </div>
             <div class="card-body">
                 @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
+                    <div class="alert alert-success alert-dismissible show fade">
+                        <div class="alert-body">
+                            <button class="close" data-dismiss="alert"><span>&times;</span></button>
+                            {{ session('success') }}
+                        </div>
+                    </div>
                 @endif
 
                 <form action="{{ route('pr.store') }}" method="POST">
@@ -42,7 +47,7 @@
 
                     <div class="form-group">
                         <label>Estimasi Total Biaya (Rp)</label>
-                        <input type="number" name="estimated_total" class="form-control" placeholder="Contoh: 15000000" required>
+                        <input type="text" name="estimated_total" id="estimated_total" class="form-control" placeholder="Contoh: 50.000.000" required>
                     </div>
 
                     <div class="form-group">
@@ -58,4 +63,19 @@
         </div>
     </div>
 </section>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Otomatis memberi format titik saat mengetik nominal
+    $('#estimated_total').on('keyup input', function() {
+        let value = $(this).val().replace(/[^0-9]/g, '');
+        if (value) {
+            $(this).val(new Intl.NumberFormat('id-ID').format(value));
+        } else {
+            $(this).val('');
+        }
+    });
+});
+</script>
 @endsection

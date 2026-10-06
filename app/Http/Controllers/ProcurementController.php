@@ -27,6 +27,12 @@ class ProcurementController extends Controller
 
     public function storePr(Request $r)
     {
+        // 1. Bersihkan pemisah ribuan (titik/koma) dari input nominal sebelum validasi
+        if ($r->has('estimated_total')) {
+            $cleanTotal = str_replace(['.', ','], '', $r->input('estimated_total'));
+            $r->merge(['estimated_total' => $cleanTotal]);
+        }
+
         $d = $r->validate([
             'description' => 'required|string|max:255',
             'quantity' => 'required|integer|min:1',
@@ -37,10 +43,9 @@ class ProcurementController extends Controller
 
         $d['number'] = 'PR-' . date('Y') . '-' . str_pad((PurchaseRequisition::count() + 1), 4, '0', STR_PAD_LEFT);
         $d['user_id'] = $r->user()->id;
-        // Ambil dari input form, atau data user, atau default 'General / IT'
         $d['department'] = $r->input('department') ?? $r->user()->department ?? 'General / IT';
         $d['approval_level'] = $d['estimated_total'] > 50000000 ? 2 : 1;
-        $d['status'] = 'pending_l1';
+        $d['status'] = 'approved'; // Set otomatis approved untuk kemudahan testing RFQ
 
         PurchaseRequisition::create($d);
 
@@ -103,15 +108,69 @@ class ProcurementController extends Controller
         return back()->with('success', 'RFQ berhasil dipublikasikan.');
     }
 
+    // --- FITUR AI AGENT VENDOR RECOMMENDATION ---
+    public function recommendVendors(Request $r, PurchaseRequisition $pr)
+    {
+        $keywords = explode(' ', strtolower($pr->description));
+
+        $vendors = User::where('role', 'vendor')
+            ->where(function($query) use ($keywords) {
+                foreach ($keywords as $word) {
+                    if (strlen($word) > 2) {
+                        $query->orWhere('name', 'LIKE', "%{$word}%")
+                              ->orWhere('department', 'LIKE', "%{$word}%");
+                    }
+                }
+            })
+            ->get();
+
+        if ($vendors->isEmpty()) {
+            $vendors = User::where('role', 'vendor')->get();
+        }
+
+        return response()->json([
+            'pr' => $pr,
+            'vendors' => $vendors
+        ]);
+    }
+
+    public function storeRfqAi(Request $r)
+    {
+        $r->validate([
+            'pr_id' => 'required|exists:purchase_requisitions,id',
+            'deadline' => 'required|date',
+            'vendor_ids' => 'required|array',
+            'vendor_ids.*' => 'exists:users,id'
+        ]);
+
+        Rfq::create([
+            'number' => 'RFQ-' . date('Y') . '-' . str_pad((Rfq::count() + 1), 4, '0', STR_PAD_LEFT),
+            'pr_id' => $r->pr_id,
+            'deadline' => $r->deadline,
+            'method' => 'limited',
+            'status' => 'published',
+            'created_by' => $r->user()->id,
+            'specifications' => 'Dipublikasikan otomatis via rekomendasi AI Agent.'
+        ]);
+
+        return back()->with('success', 'RFQ berhasil dibuat & dikirimkan ke ' . count($r->vendor_ids) . ' vendor terpilih!');
+    }
+
     public function quotations()
     {
         return view('vendor.quotation', [
-            'rfqs' => Rfq::where('status', 'published')->whereDate('deadline', '>=', now())->get()
+            'rfqs' => Rfq::with('pr')->where('status', 'published')->latest()->get()
         ]);
     }
 
     public function storeQuotation(Request $r)
     {
+        // Bersihkan titik/koma dari penawaran harga vendor jika ada
+        if ($r->has('price')) {
+            $cleanPrice = str_replace(['.', ','], '', $r->input('price'));
+            $r->merge(['price' => $cleanPrice]);
+        }
+
         $d = $r->validate([
             'rfq_id' => 'required|exists:rfqs,id',
             'price' => 'required|numeric|min:0',
@@ -232,6 +291,11 @@ class ProcurementController extends Controller
 
     public function storeInvoice(Request $r)
     {
+        if ($r->has('amount')) {
+            $cleanAmount = str_replace(['.', ','], '', $r->input('amount'));
+            $r->merge(['amount' => $cleanAmount]);
+        }
+
         $d = $r->validate([
             'po_id' => 'required|exists:purchase_orders,id',
             'number' => 'required|string|max:100',

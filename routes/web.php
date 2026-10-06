@@ -3,35 +3,50 @@
 use Illuminate\Support\Facades\Route; 
 use App\Http\Controllers\{AuthController, ProcurementController};
 
+// Redirect Halaman Utama
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+});
+
+// Guest Routes (Login)
 Route::middleware('guest')->group(function(){
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 });
 
+// Logout Route
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+// Authenticated Routes
 Route::middleware('auth')->group(function(){
-    Route::get('/', [ProcurementController::class, 'dashboard'])->name('dashboard'); 
-    Route::get('/dashboard', [ProcurementController::class, 'dashboard']);
+    
+    // Dashboard
+    Route::get('/dashboard', [ProcurementController::class, 'dashboard'])->name('dashboard');
 
     // PR Routes
     Route::prefix('pr')->name('pr.')->group(function(){
         Route::get('/create', [ProcurementController::class, 'createPr'])->name('create');
         Route::post('/create', [ProcurementController::class, 'storePr'])->name('store');
         Route::get('/my-requests', fn() => redirect()->route('dashboard'))->name('my-requests');
+        
+        // AI Recommendation Route
+        Route::get('/{pr}/ai-recommend', [ProcurementController::class, 'recommendVendors'])->name('ai_recommend');
     });
 
-    Route::get('/pr/approval-l1', [ProcurementController::class, 'approvals'])->defaults('level', 1)->name('pr.approval11'); 
-    Route::get('/pr/approval-l2', [ProcurementController::class, 'approvals'])->defaults('level', 2)->name('pr.approval12'); 
+    // PR Approval Routes
+    Route::get('/pr/approval-l1', [ProcurementController::class, 'approvals'])->defaults('level', 1)->name('pr.approval-l1'); 
+    Route::get('/pr/approval-l2', [ProcurementController::class, 'approvals'])->defaults('level', 2)->name('pr.approval-l2'); 
     Route::post('/pr/{pr}/decision', [ProcurementController::class, 'decidePr'])->name('pr.decision');
 
     // RFQ Routes
     Route::prefix('rfq')->name('rfq.')->group(function(){
         Route::get('/create', [ProcurementController::class, 'createRfq'])->name('create');
         Route::post('/create', [ProcurementController::class, 'storeRfq'])->name('store');
+        Route::post('/ai-store', [ProcurementController::class, 'storeRfqAi'])->name('ai_store');
         Route::get('/publish', fn() => redirect()->route('rfq.create'))->name('publish');
     });
 
+    // Evaluasi & Winner Routes
     Route::get('/evaluasi-penawaran', [ProcurementController::class, 'evaluation'])->name('evaluasi.index'); 
     Route::post('/quotation/{quotation}/winner', [ProcurementController::class, 'chooseWinner'])->name('quotation.winner');
 
