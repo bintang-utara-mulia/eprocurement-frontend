@@ -1,0 +1,2 @@
+<?php
+namespace App\Models; use Illuminate\Database\Eloquent\Model; class Rfq extends Model { protected $fillable=["number","pr_id","created_by","deadline","method","specifications","status"]; protected $casts=["deadline"=>"date"]; public function pr(){return $this->belongsTo(PurchaseRequisition::class,"pr_id");} public function quotations(){return $this->hasMany(Quotation::class);} public function purchaseOrder(){return $this->hasOne(PurchaseOrder::class,"rfq_id");} }

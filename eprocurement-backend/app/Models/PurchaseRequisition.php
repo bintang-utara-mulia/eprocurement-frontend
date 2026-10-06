@@ -1,0 +1,2 @@
+<?php
+namespace App\Models; use Illuminate\Database\Eloquent\Model; class PurchaseRequisition extends Model { protected $fillable=['number','user_id','department','description','quantity','unit','estimated_total','notes','status','approval_level','rejection_reason']; protected $casts=['estimated_total'=>'decimal:2']; public function user(){return $this->belongsTo(User::class);} public function rfq(){return $this->hasOne(Rfq::class,'pr_id');} }
