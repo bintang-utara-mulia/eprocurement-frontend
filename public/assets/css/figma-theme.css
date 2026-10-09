@@ -1,48 +1,21 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-  <title>@yield('title') - E-Procurement</title>
+/* Figma Theme Custom Styles */
+:root {
+  --primary-color: #2563eb;
+  --sidebar-bg: #0b192c;
+  --bg-light: #f8fafc;
+}
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-  <link rel="stylesheet" href="{{ asset('assets/css/components.css') }}">
-  <link rel="stylesheet" href="{{ asset('assets/css/figma-theme.css') }}">
-  <link rel="stylesheet" href="{{ asset('assets/css/modern.css') }}">
-</head>
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-light);
+}
 
-<body>
-  <div id="app">
-    <div class="main-wrapper">
-      <div class="navbar-bg"></div>
+.main-sidebar {
+  background-color: var(--sidebar-bg) !important;
+}
 
-      @include('layouts.partials.navbar')
-      @include('layouts.partials.sidebar')
-
-      <div class="main-content">
-        <section class="section">
-          @yield('content')
-        </section>
-      </div>
-
-      <footer class="main-footer">
-        <div class="footer-left">
-          Copyright &copy; {{ date('Y') }} E-Procurement Team
-        </div>
-      </footer>
-    </div>
-  </div>
-
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.nicescroll/3.7.6/jquery.nicescroll.min.js"></script>
-  <script src="{{ asset('assets/js/stisla.js') }}"></script>
-  <script src="{{ asset('assets/js/scripts.js') }}"></script>
-  <script src="{{ asset('assets/js/custom.js') }}"></script>
-</body>
-</html>
+.card-custom {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
