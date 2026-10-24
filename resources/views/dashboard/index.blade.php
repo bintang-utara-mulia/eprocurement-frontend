@@ -78,7 +78,7 @@
 </style>
 
 <div class="section-header">
-    <h1>Dashboard E-Procurement</h1>
+    <h1>Dashboard2 E-Procurement</h1>
 </div>
 
 <div class="section-body">
